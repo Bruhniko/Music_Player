@@ -37,7 +37,8 @@ This player uses [Python](https://github.com/topics/python), [Mutagen](https://g
   
 </details>
 
-<summary>Alpha v0.1.2 </summary>
+<details>
+<summary>Alpha v0.1.2</summary>
   
 - Bugs fixed
 
