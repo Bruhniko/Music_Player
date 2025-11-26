@@ -37,6 +37,18 @@ This player uses [Python](https://github.com/topics/python), [Mutagen](https://g
   
 </details>
 
+<summary>Alpha v0.1.2 </summary>
+  
+- Bugs fixed
+
+- Filter categories deleted
+
+- Search Bar fixed
+
+- Icon added
+
+</details>
+
 ## Requirements
 <details> <summary>Windows/ MacOS</summary>
   
