@@ -1,5 +1,5 @@
 # MUSIC PLAYER By Jessie
-# V 0.1.1 DATE: 26/NOV/2025
+# V 0.1.2 DATE: 26/NOV/2025
 # Python 3.x
 
 # Import LIBRARIES
@@ -65,8 +65,7 @@ class MusicPlayer:
         top_bar.pack_propagate(False)
 
 
-        title = Label(top_bar, text="🎵 MUSIC PLAYER (v0.2.4)", bg="#1a1a1a", 
-                     fg="white", font=("Arial", 16, "bold"))
+        title = Label(top_bar, text="MUSIC PLAYER", bg="#1a1a1a", fg="white", font=("Seoge UI", 28, "bold"))
         title.pack(side=LEFT, padx=20, pady=10)
 
 
@@ -657,9 +656,15 @@ SIZE:
         except:
             pass
 
-
-# START APPLICATION
+# FIND IMAGE THEN ADD IT TO ICON THEN START APPLICATION
 if __name__ == "__main__":
     root = Tk()
+    try:
+        from PIL import Image, ImageTk
+        icono_pil = Image.open("assets/icono.png")
+        icono = ImageTk.PhotoImage(icono_pil)
+        root.iconphoto(True, icono)
+    except Exception as e:
+        print("No Image Found", e)
     app = MusicPlayer(root)
     root.mainloop()
