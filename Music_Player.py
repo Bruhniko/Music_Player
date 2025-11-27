@@ -31,7 +31,7 @@ class MusicPlayer:
         self.root.configure(bg="#0f0f0f")
 
 
-        # Variables
+        # VAR
         self.playlist = []
         self.current_track = 0
         self.is_playing = False
@@ -41,17 +41,17 @@ class MusicPlayer:
         self.music_folder = None
 
 
-        # Sistema de tiempo MANUAL
+        # TIME SYSTEM
         self.slider_dragging = False
         self.playback_start_time = 0
         self.playback_elapsed = 0
 
 
-        # Generate UI
+        # GENERATE UI
         self.create_ui()
         self.start_update_thread()
     
-    # Main UI Creation
+    # CREATE MAIN UI
     def create_ui(self):
 
 
@@ -103,12 +103,12 @@ class MusicPlayer:
         center_frame.pack(side=LEFT, fill=BOTH, expand=True, padx=10, pady=10)
 
 
-        # UPPER SECTION: INFO Y CONTROLS
+        # UPPER SECTION: INFO AND CONTROLS
         top_section = Frame(center_frame, bg="#0f0f0f")
         top_section.pack(fill=BOTH, expand=True, pady=(0, 10))
 
 
-        # ALBUM COVER
+        # ALBUM COVER FRAME
         cover_frame = Frame(top_section, bg="#2a2a2a", width=280, height=280)
         cover_frame.pack(side=LEFT, padx=(0, 20))
         cover_frame.pack_propagate(False)
@@ -257,7 +257,7 @@ class MusicPlayer:
         scrollbar.pack(side=RIGHT, fill=Y)
 
 
-        # Columnas - Song | Album | Artist | Duration
+        # COLUMNS - SONG, ALBUM, ARTIST, DURATION
         self.playlist_tree = ttk.Treeview(tree_frame, columns=("Album", "Artist", "Duration"),
                                          show="tree headings", yscrollcommand=scrollbar.set,
                                          height=10)
@@ -518,7 +518,7 @@ SIZE:
                 self.current_song_path = song_path
                 self.play_btn.config(text="⏸", bg="#FF6B6B")
                 
-                # Inicializar sistema de tiempo manual
+                # START TIME TRACKING
                 self.playback_start_time = time.time()
                 self.playback_elapsed = 0
                 
@@ -533,19 +533,19 @@ SIZE:
             messagebox.showwarning("Warning", "Sin canciones cargadas")
             return
 
-        # Si NO está reproduciendo
+        # IF NOT PLAYING
         if not self.is_playing:
-            # Si está pausado, reanudar
+            # IF PAUSED, RESUME
             if self.is_paused:
                 mixer.music.unpause()
                 self.playback_start_time = time.time()
                 self.is_playing = True
                 self.is_paused = False
                 self.play_btn.config(text="⏸", bg="#FF6B6B")
-            # Si no hay nada cargado, comenzar
+            # IF NOT LOADED, PLAY CURRENT TRACK
             else:
                 self.play()
-        # Si SÍ está reproduciendo, pausar
+        # IF LOADED AND PLAYING, PAUSE
         else:
             mixer.music.pause()
             self.playback_elapsed += time.time() - self.playback_start_time
@@ -668,3 +668,5 @@ if __name__ == "__main__":
         print("No Image Found", e)
     app = MusicPlayer(root)
     root.mainloop()
+
+# END OF PLAYER YEAH
