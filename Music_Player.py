@@ -661,7 +661,7 @@ if __name__ == "__main__":
     root = Tk()
     try:
         from PIL import Image, ImageTk
-        icono_pil = Image.open("assets/icono.png")
+        icono_pil = Image.open("assets/icon.png")
         icono = ImageTk.PhotoImage(icono_pil)
         root.iconphoto(True, icono)
     except Exception as e:
