@@ -59,12 +59,12 @@ class MusicPlayer:
         main_frame.pack(fill=BOTH, expand=True)
 
 
-        # UPPER BAR
+        # UPPER BAR HEADER
         top_bar = Frame(main_frame, bg="#1a1a1a", height=50)
         top_bar.pack(fill=X)
         top_bar.pack_propagate(False)
 
-
+        # TITLE
         title = Label(top_bar, text="MUSIC PLAYER", bg="#1a1a1a", fg="white", font=("Seoge UI", 28, "bold"))
         title.pack(side=LEFT, padx=20, pady=10)
 
