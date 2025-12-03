@@ -19,9 +19,10 @@ import threading
 import time
 
 
-# Main Config
+# MAIN INITIALIZATION
 mixer.init(frequency=44100, size=-16, channels=2, buffer=512)
 
+# MUSIC PLAYER CLASS
 
 class MusicPlayer:
     def __init__(self, root):
@@ -64,7 +65,7 @@ class MusicPlayer:
         top_bar.pack(fill=X)
         top_bar.pack_propagate(False)
 
-        # TITLE
+        # HEADER TITLE
         title = Label(top_bar, text="MUSIC PLAYER", bg="#1a1a1a", fg="white", font=("Seoge UI", 28, "bold"))
         title.pack(side=LEFT, padx=20, pady=10)
 
