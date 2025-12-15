@@ -15,6 +15,15 @@ This university-level beginner project is designed to deliver a functional music
 ## Description
 This player uses [Python](https://github.com/topics/python), [Mutagen](https://github.com/quodlibet/mutagen) to read audio formats, [Tkinter](https://docs.python.org/3/library/tkinter.html) for the GUI, and [Pygame](https://github.com/pygame/pygame) for audio playback.
 
+## App windows & History 
+<details>
+<summary>Images</summary>
+ <img src="https://github.com/Bruhniko/Bruhniko/blob/main/assets/H1.png?raw=true" alt="H1" width="550" />
+ <img src="https://github.com/Bruhniko/Bruhniko/blob/main/assets/S1.png?raw=true" alt="S1" width="550" />
+ <img src="https://github.com/Bruhniko/Bruhniko/blob/main/assets/S2.png?raw=true" alt="S2" width="550" />
+ <img src="https://github.com/Bruhniko/Bruhniko/blob/main/assets/S3.png?raw=true" alt="S3" width="550" />
+</details>
+
 ## Releases
 <details>
 <summary>Alpha v0.1.o FIRST RELEASE!</summary>
