@@ -7,7 +7,7 @@ by [@Bruhniko](https://github.com/Bruhniko) and [@paulosantyp](https://github.co
 **Music Player** is a desktop application built in [Python](https://github.com/topics/python)
  to play local music files
  
-<img src="assets/Music-Player.png" alt="Music Player" width="500" />
+<img src="https://github.com/Bruhniko/Bruhniko/blob/main/assets/Music-Player.png?raw=true" alt="MP" width="500" />
 
 ## Description
 This player uses [Python](https://github.com/topics/python), [Mutagen](https://github.com/quodlibet/mutagen) to read audio formats, [Tkinter](https://docs.python.org/3/library/tkinter.html) for the GUI, and [Pygame](https://github.com/pygame/pygame) for audio playback.
