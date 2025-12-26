@@ -114,16 +114,20 @@ class MusicPlayer:
 
         # SONG INFO
         self.artist_label = Label(info_panel, text="Artist", bg="#0f0f0f",
-                                 fg="#888888", font=("Arial", 12))
-        self.artist_label.pack(anchor=W, pady=(0, 5))
+                                 fg="#888888", font=("Segoe UI", 12))
+        self.artist_label.pack(anchor=W, pady=(0, 0))
+
+        self.status_label = Label(info_panel, text="▶ Now Playing", bg="#0f0f0f",
+                                 fg="#4CAF50", font=("Segoe UI", 8, "bold"))
+        self.status_label.pack(anchor=W, pady=(0, 5))
 
         self.title_label = Label(info_panel, text="Song Title", bg="#0f0f0f",
-                                fg="white", font=("Arial", 18, "bold"),
+                                fg="white", font=("Segoe UI", 18, "bold"),
                                 wraplength=300)
         self.title_label.pack(anchor=W, pady=(0, 10))
 
         self.album_label = Label(info_panel, text="Album", bg="#0f0f0f",
-                                fg="#666666", font=("Arial", 10))
+                                fg="#666666", font=("Segoe UI", 10))
         self.album_label.pack(anchor=W, pady=(0, 20))
 
         # PLAYBACK CONTROLS
@@ -292,7 +296,7 @@ class MusicPlayer:
             self.refresh_playlist()
 
             if self.playlist:
-                messagebox.showinfo("Success", f"{len(self.playlist)} canciones cargadas de la carpeta.")
+                messagebox.showinfo("Success", f"{len(self.playlist)} Songs successfully loaded.")
 
     def refresh_playlist(self):
         self.playlist_tree.delete(*self.playlist_tree.get_children())
