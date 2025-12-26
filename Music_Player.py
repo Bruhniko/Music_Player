@@ -1,5 +1,5 @@
 # MUSIC PLAYER By Jessie
-# V 0.1.2 DATE: 26/NOV/2025
+# V 0.1.4 WITH STRICT AUTH DATE: 12/DEC/2025
 # Python 3.x
 
 # Import LIBRARIES
@@ -17,12 +17,62 @@ from mutagen.mp3 import MP3
 import io
 import threading
 import time
+import json
+from datetime import datetime
+
+SESSION_FILE = "session.json"
+
+#AUTHENTICATION
+def check_authentication():
+    """Verifica si existe una sesión válida - BLOQUEA si no existe"""
+    
+    # Función para mostrar ventana de error y abrir login
+    def show_auth_error():
+        root_error = Tk()
+        root_error.withdraw()
+        messagebox.showerror(
+            "Acceso Denegado", 
+            "Debes iniciar sesión primero en el Login.\n\nAbre Login.py para autenticarte."
+        )
+        root_error.destroy()
+    
+    # Verificar si el archivo de sesión existe
+    if not os.path.exists(SESSION_FILE):
+        print("No hay sesión. Abriendo Login...")
+        show_auth_error()
+        return False
+    
+    try:
+        with open(SESSION_FILE, 'r') as f:
+            session_data = json.load(f)
+        
+        # Verificar si está autenticado
+        if not session_data.get("authenticated", False):
+            print("Sesión inválida.")
+            show_auth_error()
+            return False
+        
+        # Verificar si expiró
+        expiry_str = session_data.get("expiry_time", "")
+        if expiry_str:
+            expiry_time = datetime.fromisoformat(expiry_str)
+            if datetime.now() > expiry_time:
+                print("Sesión expirada.")
+                os.remove(SESSION_FILE)
+                show_auth_error()
+                return False
+        
+        print("Sesión válida - Acceso permitido")
+        return True
+        
+    except Exception as e:
+        print(f"Error verificando sesión: {e}")
+        show_auth_error()
+        return False
 
 
-# MAIN INITIALIZATION
+#Main
 mixer.init(frequency=44100, size=-16, channels=2, buffer=512)
-
-# MUSIC PLAYER CLASS
 
 class MusicPlayer:
     def __init__(self, root):
@@ -30,7 +80,6 @@ class MusicPlayer:
         self.root.title("MUSIC PLAYER")
         self.root.geometry("1400x800")
         self.root.configure(bg="#0f0f0f")
-
 
         # VAR
         self.playlist = []
@@ -41,188 +90,164 @@ class MusicPlayer:
         self.supported_formats = (".mp3", ".wav", ".flac")
         self.music_folder = None
 
-
         # TIME SYSTEM
         self.slider_dragging = False
         self.playback_start_time = 0
         self.playback_elapsed = 0
 
-
         # GENERATE UI
         self.create_ui()
         self.start_update_thread()
-    
+
     # CREATE MAIN UI
     def create_ui(self):
-
-
         main_frame = Frame(self.root, bg="#0f0f0f")
         main_frame.pack(fill=BOTH, expand=True)
-
 
         # UPPER BAR HEADER
         top_bar = Frame(main_frame, bg="#1a1a1a", height=50)
         top_bar.pack(fill=X)
         top_bar.pack_propagate(False)
 
-        # HEADER TITLE
+        # TITLE
         title = Label(top_bar, text="MUSIC PLAYER", bg="#1a1a1a", fg="white", font=("Seoge UI", 28, "bold"))
         title.pack(side=LEFT, padx=20, pady=10)
-
 
         # MAIN CONTENT FRAME
         content_frame = Frame(main_frame, bg="#0f0f0f")
         content_frame.pack(fill=BOTH, expand=True)
-
 
         # LEFT SIDEBAR
         sidebar = Frame(content_frame, bg="#1a1a1a", width=280)
         sidebar.pack(side=LEFT, fill=Y)
         sidebar.pack_propagate(False)
 
-
         # SEARCH BAR
         search_frame = Frame(sidebar, bg="#1a1a1a")
         search_frame.pack(fill=X, padx=10, pady=10)
-        Label(search_frame, text="🔍 Search", bg="#1a1a1a", fg="#888888", 
-             font=("Arial", 9)).pack(anchor=W)
-        self.search_entry = Entry(search_frame, bg="#2a2a2a", fg="white", 
-                                 font=("Arial", 10))
+
+        Label(search_frame, text="🔍 Search", bg="#1a1a1a", fg="#888888",
+              font=("Arial", 9)).pack(anchor=W)
+
+        self.search_entry = Entry(search_frame, bg="#2a2a2a", fg="white",
+                                  font=("Arial", 10))
         self.search_entry.pack(fill=X, pady=(5, 0))
         self.search_entry.bind("<KeyRelease>", self.filter_playlist)
 
-
         # FOLDER BUTTON
         folder_btn = Button(sidebar, text="📂 Open Folder", command=self.load_folder,
-                           bg="#333333", fg="white", font=("Arial", 10), 
+                           bg="#333333", fg="white", font=("Arial", 10),
                            relief=FLAT, padx=10, pady=8)
         folder_btn.pack(fill=X, padx=10, pady=(0, 10))
 
+        # LOGOUT BUTTON
+        logout_btn = Button(sidebar, text="🚪 Logout", command=self.logout,
+                           bg="#FF6B6B", fg="white", font=("Arial", 10),
+                           relief=FLAT, padx=10, pady=8)
+        logout_btn.pack(fill=X, padx=10, pady=(0, 10))
 
         # RIGHT AND CENTER FRAMES
         center_frame = Frame(content_frame, bg="#0f0f0f")
         center_frame.pack(side=LEFT, fill=BOTH, expand=True, padx=10, pady=10)
 
-
         # UPPER SECTION: INFO AND CONTROLS
         top_section = Frame(center_frame, bg="#0f0f0f")
         top_section.pack(fill=BOTH, expand=True, pady=(0, 10))
-
 
         # ALBUM COVER FRAME
         cover_frame = Frame(top_section, bg="#2a2a2a", width=280, height=280)
         cover_frame.pack(side=LEFT, padx=(0, 20))
         cover_frame.pack_propagate(False)
 
-
         self.cover_label = Label(cover_frame, bg="#2a2a2a", fg="#666666",
                                 font=("Arial", 11), text="Album Cover")
         self.cover_label.pack(expand=True)
 
-
         # INFO AND CONTROLS PANEL
         info_panel = Frame(top_section, bg="#0f0f0f")
         info_panel.pack(side=LEFT, fill=BOTH, expand=True, padx=(0, 20))
-
 
         # SONG INFO
         self.artist_label = Label(info_panel, text="Artist", bg="#0f0f0f",
                                  fg="#888888", font=("Arial", 12))
         self.artist_label.pack(anchor=W, pady=(0, 5))
 
-
         self.title_label = Label(info_panel, text="Song Title", bg="#0f0f0f",
                                 fg="white", font=("Arial", 18, "bold"),
                                 wraplength=300)
         self.title_label.pack(anchor=W, pady=(0, 10))
 
-
         self.album_label = Label(info_panel, text="Album", bg="#0f0f0f",
                                 fg="#666666", font=("Arial", 10))
         self.album_label.pack(anchor=W, pady=(0, 20))
 
-
         # PLAYBACK CONTROLS
         controls_frame = Frame(info_panel, bg="#0f0f0f")
         controls_frame.pack(anchor=W, pady=10)
-
 
         self.prev_btn = Button(controls_frame, text="⏮", command=self.previous,
                               bg="#333333", fg="white", font=("Arial", 18),
                               width=3, relief=FLAT)
         self.prev_btn.pack(side=LEFT, padx=5)
 
-
         self.play_btn = Button(controls_frame, text="▶", command=self.play_pause,
                               bg="#4CAF50", fg="white", font=("Arial", 18),
                               width=3, relief=FLAT)
         self.play_btn.pack(side=LEFT, padx=5)
-
 
         self.next_btn = Button(controls_frame, text="⏭", command=self.next,
                               bg="#333333", fg="white", font=("Arial", 18),
                               width=3, relief=FLAT)
         self.next_btn.pack(side=LEFT, padx=5)
 
-
         # PROGRESS SLIDER
         progress_frame = Frame(info_panel, bg="#0f0f0f")
         progress_frame.pack(fill=X, pady=20)
-
 
         self.time_label = Label(progress_frame, text="0:00", bg="#0f0f0f",
                                fg="#888888", font=("Arial", 9))
         self.time_label.pack(side=LEFT, padx=(0, 10))
 
-
         self.progress_slider = Scale(progress_frame, from_=0, to=100, orient=HORIZONTAL,
-                                    bg="#333333", fg="#4CAF50", length=200,
-                                    command=self.on_slider_change)
+                                     bg="#333333", fg="#4CAF50", length=200,
+                                     command=self.on_slider_change)
         self.progress_slider.pack(side=LEFT, fill=X, expand=True)
-
 
         # SLIDER EVENTS
         self.progress_slider.bind("<ButtonPress-1>", self.on_slider_press)
         self.progress_slider.bind("<ButtonRelease-1>", self.on_slider_release)
 
-
         self.duration_label = Label(progress_frame, text="0:00", bg="#0f0f0f",
                                    fg="#888888", font=("Arial", 9))
         self.duration_label.pack(side=LEFT, padx=(10, 0))
-
 
         # VOLUME CONTROL
         volume_frame = Frame(info_panel, bg="#0f0f0f")
         volume_frame.pack(anchor=W, pady=10)
 
-
         Label(volume_frame, text="🔊 Vol", bg="#0f0f0f", fg="#888888",
-             font=("Arial", 10)).pack(side=LEFT, padx=(0, 10))
+              font=("Arial", 10)).pack(side=LEFT, padx=(0, 10))
+
         self.volume_slider = Scale(volume_frame, from_=0, to=100, orient=HORIZONTAL,
-                                  bg="#333333", fg="#4CAF50", length=150,
-                                  command=self.set_volume)
+                                   bg="#333333", fg="#4CAF50", length=150,
+                                   command=self.set_volume)
         self.volume_slider.set(70)
         self.volume_slider.pack(side=LEFT)
-
 
         # METADATA PANEL
         metadata_panel = Frame(top_section, bg="#1a1a1a", width=280)
         metadata_panel.pack(side=RIGHT, fill=BOTH)
         metadata_panel.pack_propagate(False)
 
-
         Label(metadata_panel, text="📊 INFO", bg="#1a1a1a", fg="white",
-             font=("Arial", 11, "bold")).pack(anchor=W, padx=15, pady=(15, 10))
-
+              font=("Arial", 11, "bold")).pack(anchor=W, padx=15, pady=(15, 10))
 
         # FRAME W SCROLLBAR
         scroll_frame = Frame(metadata_panel, bg="#1a1a1a")
         scroll_frame.pack(fill=BOTH, expand=True, padx=10, pady=10)
 
-
         scrollbar_meta = ttk.Scrollbar(scroll_frame)
         scrollbar_meta.pack(side=RIGHT, fill=Y)
-
 
         self.metadata_text = Text(scroll_frame, bg="#2a2a2a", fg="#888888",
                                  font=("Courier", 8), height=30, width=32,
@@ -232,15 +257,12 @@ class MusicPlayer:
         self.metadata_text.pack(fill=BOTH, expand=True)
         self.metadata_text.config(state=DISABLED)
 
-
         # SONG LIST / PLAYLIST
         list_frame = Frame(center_frame, bg="#0f0f0f")
         list_frame.pack(fill=BOTH, expand=True)
 
-
         Label(list_frame, text="📋 Playlist", bg="#0f0f0f", fg="white",
-             font=("Arial", 11, "bold")).pack(anchor=W)
-
+              font=("Arial", 11, "bold")).pack(anchor=W)
 
         style = ttk.Style()
         style.theme_use("clam")
@@ -249,14 +271,11 @@ class MusicPlayer:
         style.configure("Treeview.Heading", background="#2a2a2a", foreground="white")
         style.map("Treeview", background=[("selected", "#4CAF50")])
 
-
         tree_frame = Frame(list_frame, bg="#0f0f0f")
         tree_frame.pack(fill=BOTH, expand=True)
 
-
         scrollbar = ttk.Scrollbar(tree_frame)
         scrollbar.pack(side=RIGHT, fill=Y)
-
 
         # COLUMNS - SONG, ALBUM, ARTIST, DURATION
         self.playlist_tree = ttk.Treeview(tree_frame, columns=("Album", "Artist", "Duration"),
@@ -264,32 +283,26 @@ class MusicPlayer:
                                          height=10)
         scrollbar.config(command=self.playlist_tree.yview)
 
-
         self.playlist_tree.column("#0", width=200, anchor="w")
         self.playlist_tree.column("Album", width=150, anchor="w")
         self.playlist_tree.column("Artist", width=120, anchor="w")
         self.playlist_tree.column("Duration", width=80, anchor="center")
-
 
         self.playlist_tree.heading("#0", text="Song")
         self.playlist_tree.heading("Album", text="Album")
         self.playlist_tree.heading("Artist", text="Artist")
         self.playlist_tree.heading("Duration", text="Duration")
 
-
         self.playlist_tree.bind("<Double-1>", self.on_track_select)
         self.playlist_tree.pack(fill=BOTH, expand=True)
 
-
     def on_slider_press(self, event):
         self.slider_dragging = True
-
 
     def on_slider_release(self, event):
         self.slider_dragging = False
         slider_value = self.progress_slider.get()
         self.seek_song(slider_value)
-
 
     def on_slider_change(self, val):
         if self.slider_dragging:
@@ -300,24 +313,22 @@ class MusicPlayer:
             except:
                 pass
 
-
     def filter_playlist(self, event=None):
         search_text = self.search_entry.get().lower()
         self.playlist_tree.delete(*self.playlist_tree.get_children())
-        
+
         for idx, song_path in enumerate(self.playlist):
             metadata = self.get_metadata(song_path)
             name = metadata.get("title", Path(song_path).stem).lower()
             artist = metadata.get("artist", "Unknown").lower()
             album = metadata.get("album", "Unknown").lower()
-            
+
             if search_text in name or search_text in artist or search_text in album:
                 duration = metadata.get("duration_str", "0:00")
-                self.playlist_tree.insert("", END, text=metadata.get("title", Path(song_path).stem), 
+                self.playlist_tree.insert("", END, text=metadata.get("title", Path(song_path).stem),
                                          values=(metadata.get("album", "Unknown"),
-                                                metadata.get("artist", "Unknown"), 
+                                                metadata.get("artist", "Unknown"),
                                                 duration))
-
 
     def load_folder(self):
         folder = filedialog.askdirectory(title="Selecciona carpeta de música")
@@ -332,9 +343,9 @@ class MusicPlayer:
                     self.playlist.append(file_path)
 
             self.refresh_playlist()
+
             if self.playlist:
                 messagebox.showinfo("Success", f"{len(self.playlist)} canciones cargadas de la carpeta.")
-
 
     def refresh_playlist(self):
         self.playlist_tree.delete(*self.playlist_tree.get_children())
@@ -346,9 +357,8 @@ class MusicPlayer:
             artist = metadata.get("artist", "Unknown")
             duration = metadata.get("duration_str", "0:00")
 
-            self.playlist_tree.insert("", END, text=name, 
+            self.playlist_tree.insert("", END, text=name,
                                      values=(album, artist, duration))
-
 
     def get_metadata(self, file_path):
         metadata = {
@@ -374,7 +384,6 @@ class MusicPlayer:
                     metadata["title"] = str(tags.get("TIT2", Path(file_path).stem))
                     metadata["artist"] = str(tags.get("TPE1", "Unknown"))
                     metadata["album"] = str(tags.get("TALB", "Unknown"))
-
                     for frame in tags.getall("APIC"):
                         metadata["cover"] = frame.data
                         break
@@ -428,58 +437,40 @@ class MusicPlayer:
 
         return metadata
 
-
     def format_duration(self, seconds):
         mins, secs = divmod(int(seconds), 60)
         return f"{mins}:{secs:02d}"
-
 
     def update_metadata_display(self):
         if self.current_song_path and self.current_track < len(self.playlist):
             metadata = self.get_metadata(self.current_song_path)
 
             info_text = f"""━━━━━━━━━━━━━━━━━━━
-
 📁 INFO
-
 TITLE:
 {metadata.get('title', 'N/A')[:25]}
-
 ARTIST:
 {metadata.get('artist', 'N/A')[:25]}
-
 ALBUM:
 {metadata.get('album', 'N/A')[:25]}
-
 ━━━━━━━━━━━━━━━━━━━
-
 🎵 PROPERTIES
-
 FORMAT:
 {metadata.get('format', 'N/A')}
-
 LENGTH:
 {metadata.get('duration_str', 'N/A')}
-
 BITRATE:
 {metadata.get('bitrate', 0)} kbps
-
 FREQUENCY:
 {metadata.get('sample_rate', 0)} Hz
-
 CHANNELS:
 {metadata.get('channels', 0)}
-
 ━━━━━━━━━━━━━━━━━━━
-
 📂 FILE
-
 PATH:
 {Path(self.current_song_path).name[:25]}
-
 SIZE:
 {self.get_file_size(self.current_song_path)}
-
 ━━━━━━━━━━━━━━━━━━━"""
 
             self.metadata_text.config(state=NORMAL)
@@ -487,14 +478,12 @@ SIZE:
             self.metadata_text.insert("1.0", info_text)
             self.metadata_text.config(state=DISABLED)
 
-
     def get_file_size(self, file_path):
         try:
             size_mb = os.path.getsize(file_path) / (1024 * 1024)
             return f"{size_mb:.2f} MB"
         except:
             return "N/A"
-
 
     def on_track_select(self, event):
         selection = self.playlist_tree.selection()
@@ -507,7 +496,6 @@ SIZE:
                     break
             self.play()
 
-
     def play(self):
         if self.current_track < len(self.playlist):
             try:
@@ -518,16 +506,14 @@ SIZE:
                 self.is_paused = False
                 self.current_song_path = song_path
                 self.play_btn.config(text="⏸", bg="#FF6B6B")
-                
+
                 # START TIME TRACKING
                 self.playback_start_time = time.time()
                 self.playback_elapsed = 0
-                
                 self.update_metadata_display()
                 self.update_display()
             except Exception as e:
                 messagebox.showerror("Error", f"No se puede reproducir: {e}")
-
 
     def play_pause(self):
         if not self.playlist:
@@ -543,9 +529,11 @@ SIZE:
                 self.is_playing = True
                 self.is_paused = False
                 self.play_btn.config(text="⏸", bg="#FF6B6B")
+
             # IF NOT LOADED, PLAY CURRENT TRACK
             else:
                 self.play()
+
         # IF LOADED AND PLAYING, PAUSE
         else:
             mixer.music.pause()
@@ -554,32 +542,30 @@ SIZE:
             self.is_paused = True
             self.play_btn.config(text="▶", bg="#4CAF50")
 
-
     def next(self):
         if self.playlist:
             self.current_track = (self.current_track + 1) % len(self.playlist)
             self.play()
+
             if self.playlist_tree.get_children():
                 try:
                     self.playlist_tree.selection_set(self.playlist_tree.get_children()[self.current_track])
                 except:
                     pass
-
 
     def previous(self):
         if self.playlist:
             self.current_track = (self.current_track - 1) % len(self.playlist)
             self.play()
+
             if self.playlist_tree.get_children():
                 try:
                     self.playlist_tree.selection_set(self.playlist_tree.get_children()[self.current_track])
                 except:
                     pass
 
-
     def set_volume(self, val):
         mixer.music.set_volume(float(val) / 100)
-
 
     def seek_song(self, val):
         try:
@@ -591,19 +577,16 @@ SIZE:
         except:
             pass
 
-
     def get_current_playback_time(self):
         if not self.is_playing:
             return self.playback_elapsed
-        
+
         current_session_time = time.time() - self.playback_start_time
         return self.playback_elapsed + current_session_time
-
 
     def start_update_thread(self):
         thread = threading.Thread(target=self.update_loop, daemon=True)
         thread.start()
-
 
     def update_loop(self):
         while True:
@@ -612,7 +595,6 @@ SIZE:
                 time.sleep(0.1)
             except:
                 pass
-
 
     def update_display(self):
         try:
@@ -641,24 +623,39 @@ SIZE:
                 if self.is_playing and not self.slider_dragging:
                     current_pos = self.get_current_playback_time()
                     total_duration = metadata.get("duration", 1)
-                    
+
                     if current_pos > total_duration:
                         current_pos = total_duration
-                    
+
                     self.progress_slider.config(to=total_duration)
                     self.progress_slider.set(int(current_pos))
-                    
                     self.time_label.config(text=self.format_duration(current_pos))
                     self.duration_label.config(text=metadata.get("duration_str", "0:00"))
 
                 # SONG ENDED - NEXT
                 if not mixer.music.get_busy() and self.is_playing:
                     self.next()
+
         except:
             pass
 
+    def logout(self):
+        """Cierra sesión y vuelve al login"""
+        if messagebox.askyesno("Logout", "¿Deseas cerrar sesión?"):
+            if os.path.exists(SESSION_FILE):
+                os.remove(SESSION_FILE)
+            messagebox.showinfo("Logout", "Sesión cerrada. Abre Login.py para acceder nuevamente.")
+            self.root.destroy()
+
+
 # FIND IMAGE THEN ADD IT TO ICON THEN START APPLICATION
 if __name__ == "__main__":
+    # CHECK AUTHENTICATION FIRST - BLOQUEANTE
+    print("🔐 Verificando autenticación...")
+    if not check_authentication():
+        print("❌ Acceso denegado - Music Player no se ejecutará")
+        exit(1)
+    
     root = Tk()
     try:
         from PIL import Image, ImageTk
@@ -667,7 +664,6 @@ if __name__ == "__main__":
         root.iconphoto(True, icono)
     except Exception as e:
         print("No Image Found", e)
+
     app = MusicPlayer(root)
     root.mainloop()
-
-# END OF PLAYER YEAH
