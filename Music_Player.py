@@ -1,8 +1,8 @@
-# MUSIC PLAYER By Jessie
-# V 0.1.4 WITH STRICT AUTH DATE: 12/DEC/2025
+# MUSIC PLAYER By Jessie & PauloSantyp
+# V 0.1.5 DATE 25/12/2025
 # Python 3.x
 
-# Import LIBRARIES
+# LIBRARIES
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog, messagebox
@@ -17,61 +17,8 @@ from mutagen.mp3 import MP3
 import io
 import threading
 import time
-import json
-from datetime import datetime
 
-SESSION_FILE = "session.json"
-
-#AUTHENTICATION
-def check_authentication():
-    """Verifica si existe una sesión válida - BLOQUEA si no existe"""
-    
-    # Función para mostrar ventana de error y abrir login
-    def show_auth_error():
-        root_error = Tk()
-        root_error.withdraw()
-        messagebox.showerror(
-            "Acceso Denegado", 
-            "Debes iniciar sesión primero en el Login.\n\nAbre Login.py para autenticarte."
-        )
-        root_error.destroy()
-    
-    # Verificar si el archivo de sesión existe
-    if not os.path.exists(SESSION_FILE):
-        print("No hay sesión. Abriendo Login...")
-        show_auth_error()
-        return False
-    
-    try:
-        with open(SESSION_FILE, 'r') as f:
-            session_data = json.load(f)
-        
-        # Verificar si está autenticado
-        if not session_data.get("authenticated", False):
-            print("Sesión inválida.")
-            show_auth_error()
-            return False
-        
-        # Verificar si expiró
-        expiry_str = session_data.get("expiry_time", "")
-        if expiry_str:
-            expiry_time = datetime.fromisoformat(expiry_str)
-            if datetime.now() > expiry_time:
-                print("Sesión expirada.")
-                os.remove(SESSION_FILE)
-                show_auth_error()
-                return False
-        
-        print("Sesión válida - Acceso permitido")
-        return True
-        
-    except Exception as e:
-        print(f"Error verificando sesión: {e}")
-        show_auth_error()
-        return False
-
-
-#Main
+# Main
 mixer.init(frequency=44100, size=-16, channels=2, buffer=512)
 
 class MusicPlayer:
@@ -109,9 +56,13 @@ class MusicPlayer:
         top_bar.pack(fill=X)
         top_bar.pack_propagate(False)
 
+ # ICON 
+        self.header_icon = ImageTk.PhotoImage(Image.open("assets/small_icon.png").resize((35, 35)))
+        Label(top_bar, image=self.header_icon, bg="#1a1a1a").pack(side=LEFT, padx=(20, 5), pady=10)
+
         # TITLE
-        title = Label(top_bar, text="MUSIC PLAYER", bg="#1a1a1a", fg="white", font=("Seoge UI", 28, "bold"))
-        title.pack(side=LEFT, padx=20, pady=10)
+        title = Label(top_bar, text="MUSIC PLAYER", bg="#1a1a1a", fg="white", font=("Segoe UI", 28, "bold"))
+        title.pack(side=LEFT, padx=(0, 20), pady=10)
 
         # MAIN CONTENT FRAME
         content_frame = Frame(main_frame, bg="#0f0f0f")
@@ -126,7 +77,7 @@ class MusicPlayer:
         search_frame = Frame(sidebar, bg="#1a1a1a")
         search_frame.pack(fill=X, padx=10, pady=10)
 
-        Label(search_frame, text="🔍 Search", bg="#1a1a1a", fg="#888888",
+        Label(search_frame, text="SEARCH >_", bg="#1a1a1a", fg="#888888",
               font=("Arial", 9)).pack(anchor=W)
 
         self.search_entry = Entry(search_frame, bg="#2a2a2a", fg="white",
@@ -135,16 +86,10 @@ class MusicPlayer:
         self.search_entry.bind("<KeyRelease>", self.filter_playlist)
 
         # FOLDER BUTTON
-        folder_btn = Button(sidebar, text="📂 Open Folder", command=self.load_folder,
+        folder_btn = Button(sidebar, text="[ OPEN FOLDER ]", command=self.load_folder,
                            bg="#333333", fg="white", font=("Arial", 10),
                            relief=FLAT, padx=10, pady=8)
         folder_btn.pack(fill=X, padx=10, pady=(0, 10))
-
-        # LOGOUT BUTTON
-        logout_btn = Button(sidebar, text="🚪 Logout", command=self.logout,
-                           bg="#FF6B6B", fg="white", font=("Arial", 10),
-                           relief=FLAT, padx=10, pady=8)
-        logout_btn.pack(fill=X, padx=10, pady=(0, 10))
 
         # RIGHT AND CENTER FRAMES
         center_frame = Frame(content_frame, bg="#0f0f0f")
@@ -209,8 +154,9 @@ class MusicPlayer:
         self.time_label.pack(side=LEFT, padx=(0, 10))
 
         self.progress_slider = Scale(progress_frame, from_=0, to=100, orient=HORIZONTAL,
-                                     bg="#333333", fg="#4CAF50", length=200,
-                                     command=self.on_slider_change)
+                             bg="#333333", fg="#4CAF50", length=200,
+                             command=self.on_slider_change, 
+                             highlightthickness=0)
         self.progress_slider.pack(side=LEFT, fill=X, expand=True)
 
         # SLIDER EVENTS
@@ -229,8 +175,9 @@ class MusicPlayer:
               font=("Arial", 10)).pack(side=LEFT, padx=(0, 10))
 
         self.volume_slider = Scale(volume_frame, from_=0, to=100, orient=HORIZONTAL,
-                                   bg="#333333", fg="#4CAF50", length=150,
-                                   command=self.set_volume)
+                           bg="#333333", fg="#4CAF50", length=150,
+                           command=self.set_volume, 
+                           highlightthickness=0)
         self.volume_slider.set(70)
         self.volume_slider.pack(side=LEFT)
 
@@ -513,11 +460,11 @@ SIZE:
                 self.update_metadata_display()
                 self.update_display()
             except Exception as e:
-                messagebox.showerror("Error", f"No se puede reproducir: {e}")
+                messagebox.showerror("Error", f"Cannot play: {e}")
 
     def play_pause(self):
         if not self.playlist:
-            messagebox.showwarning("Warning", "Sin canciones cargadas")
+            messagebox.showwarning("Warning", "No loaded songs in the playlist.")
             return
 
         # IF NOT PLAYING
@@ -639,23 +586,8 @@ SIZE:
         except:
             pass
 
-    def logout(self):
-        """Cierra sesión y vuelve al login"""
-        if messagebox.askyesno("Logout", "¿Deseas cerrar sesión?"):
-            if os.path.exists(SESSION_FILE):
-                os.remove(SESSION_FILE)
-            messagebox.showinfo("Logout", "Sesión cerrada. Abre Login.py para acceder nuevamente.")
-            self.root.destroy()
-
-
 # FIND IMAGE THEN ADD IT TO ICON THEN START APPLICATION
 if __name__ == "__main__":
-    # CHECK AUTHENTICATION FIRST - BLOQUEANTE
-    print("🔐 Verificando autenticación...")
-    if not check_authentication():
-        print("❌ Acceso denegado - Music Player no se ejecutará")
-        exit(1)
-    
     root = Tk()
     try:
         from PIL import Image, ImageTk
