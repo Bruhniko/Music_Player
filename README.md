@@ -9,55 +9,8 @@ by [@Bruhniko](https://github.com/Bruhniko) and [@paulosantyp](https://github.co
  
 <img src="assets/Music-Player.png" alt="Music Player" width="500" />
 
-## Objective
-This university-level beginner project is designed to deliver a functional music player that supports playing audio files in formats such as .mp3, .wav, and .flac. Additionally, it provides features to display song metadata for the user.
-
 ## Description
 This player uses [Python](https://github.com/topics/python), [Mutagen](https://github.com/quodlibet/mutagen) to read audio formats, [Tkinter](https://docs.python.org/3/library/tkinter.html) for the GUI, and [Pygame](https://github.com/pygame/pygame) for audio playback.
-
-## App windows & History 
-<details>
-<summary>Images</summary>
- <img src="https://github.com/Bruhniko/Bruhniko/blob/main/assets/H1.png?raw=true" alt="H1" width="550" />
- <img src="https://github.com/Bruhniko/Bruhniko/blob/main/assets/S1.png?raw=true" alt="S1" width="550" />
- <img src="https://github.com/Bruhniko/Bruhniko/blob/main/assets/S2.png?raw=true" alt="S2" width="550" />
- <img src="https://github.com/Bruhniko/Bruhniko/blob/main/assets/S3.png?raw=true" alt="S3" width="550" />
-</details>
-
-## Releases
-<details>
-<summary>Alpha v0.1.o FIRST RELEASE!</summary>
-  
-- The application has been successfully uploaded to GitHub for collaborative use and improvement.
-  
-- Loading entire folders containing supported audio formats.
-  
-- Extraction and display of metadata like title, artist, album, format, duration, bitrate, and album cover.
-  
-- Playback controls.
-  
-- Progress bar with slider.
-  
-- Volume control slider.
-  
-- Sidebar to search songs and filter by categories such as artist, genre, folder, and playlist (Not working rn).
-  
-- Detailed metadata panel with scroll to view all available information.
-  
-</details>
-
-<details>
-<summary>Alpha v0.1.2</summary>
-  
-- Bugs fixed
-
-- Filter categories deleted
-
-- Search Bar fixed
-
-- Icon added
-
-</details>
 
 ## Requirements
 <details> <summary>Windows/ MacOS</summary>
