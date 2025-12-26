@@ -1,5 +1,5 @@
 # MUSIC PLAYER By Jessie & PauloSantyp
-# V 0.1.5 DATE 25/12/2025
+# V0.1.5 DATE 25/12/2025
 # Python 3.x
 
 # LIBRARIES
@@ -56,7 +56,7 @@ class MusicPlayer:
         top_bar.pack(fill=X)
         top_bar.pack_propagate(False)
 
- # ICON 
+        # ICON 
         self.header_icon = ImageTk.PhotoImage(Image.open("assets/small_icon.png").resize((35, 35)))
         Label(top_bar, image=self.header_icon, bg="#1a1a1a").pack(side=LEFT, padx=(20, 5), pady=10)
 
